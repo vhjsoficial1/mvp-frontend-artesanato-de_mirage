@@ -3,11 +3,8 @@ import { Layout } from "../../components/Layout";
 
 export default function CadastroArtesao() {
   const [formData, setFormData] = useState({
-    nome: "",
     email: "",
     senha: "",
-    confirmarSenha: "",
-    termos: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -42,7 +39,6 @@ export default function CadastroArtesao() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!formData.nome.trim()) newErrors.nome = "Nome é obrigatório";
     if (!formData.email.trim()) newErrors.email = "Email é obrigatório";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Email inválido";
@@ -52,15 +48,6 @@ export default function CadastroArtesao() {
     if (!formData.senha) newErrors.senha = "Senha é obrigatória";
     else if (formData.senha.length < 6) {
       newErrors.senha = "A senha deve ter pelo menos 6 caracteres";
-    }
-    
-    if (formData.senha !== formData.confirmarSenha) {
-      newErrors.confirmarSenha = "As senhas não coincidem";
-    }
-    
-    
-    if (!formData.termos) {
-      newErrors.termos = "Você precisa aceitar os termos de uso";
     }
     
     return newErrors;
@@ -87,11 +74,11 @@ export default function CadastroArtesao() {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-amber-800 mb-6">Cadastro de Artesão</h1>
+        <h1 className="text-2xl font-bold text-amber-800 mb-6">Login de Artesão</h1>
         
         {success && (
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-            <p>Cadastro realizado com sucesso! Em breve você receberá um email de confirmação.</p>
+            <p>Login realizado com sucesso! Redirecionando...</p>
           </div>
         )}
         
@@ -100,23 +87,6 @@ export default function CadastroArtesao() {
             {/* Informações Pessoais */}
             <div className="col-span-2">
               <h2 className="text-xl font-semibold text-amber-700 mb-4">Informações Pessoais</h2>
-            </div>
-            
-            <div>
-              <label htmlFor="nome" className="block text-sm font-medium text-gray-700 mb-1">
-                Nome Completo *
-              </label>
-              <input
-                type="text"
-                id="nome"
-                name="nome"
-                value={formData.nome}
-                onChange={handleChange}
-                className={`w-full text-black px-3 py-2 border rounded-md ${
-                  errors.nome ? "border-red-500" : "border-gray-300"
-                }`}
-              />
-              {errors.nome && <p className="text-red-500 text-xs mt-1">{errors.nome}</p>}
             </div>
             
             <div>
@@ -153,46 +123,7 @@ export default function CadastroArtesao() {
               {errors.senha && <p className="text-red-500 text-xs mt-1">{errors.senha}</p>}
             </div>
             
-            <div>
-              <label htmlFor="confirmarSenha" className="block text-sm font-medium text-gray-700 mb-1">
-                Confirmar Senha *
-              </label>
-              <input
-                type="password"
-                id="confirmarSenha"
-                name="confirmarSenha"
-                value={formData.confirmarSenha}
-                onChange={handleChange}
-                className={`w-full text-black px-3 py-2 border rounded-md ${
-                  errors.confirmarSenha ? "border-red-500" : "border-gray-300"
-                }`}
-              />
-              {errors.confirmarSenha && (
-                <p className="text-red-500 text-xs mt-1">{errors.confirmarSenha}</p>
-              )}
-            </div>
             
-            {/* Termos e Condições */}
-            <div className="col-span-2">
-              <div className="flex items-start">
-                <div className="flex items-center h-5">
-                  <input
-                    id="termos"
-                    name="termos"
-                    type="checkbox"
-                    checked={formData.termos}
-                    onChange={(e) => setFormData({ ...formData, termos: e.target.checked })}
-                    className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
-                  />
-                </div>
-                <div className="ml-3 text-sm">
-                  <label htmlFor="termos" className="font-medium text-gray-700">
-                    Concordo com os <a href="#" className="text-amber-600 hover:text-amber-500">Termos de Uso</a> e <a href="#" className="text-amber-600 hover:text-amber-500">Política de Privacidade</a> *
-                  </label>
-                  {errors.termos && <p className="text-red-500 text-xs mt-1">{errors.termos}</p>}
-                </div>
-              </div>
-            </div>
           </div>
           
           <div className="flex justify-end">

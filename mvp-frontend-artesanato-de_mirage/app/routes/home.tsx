@@ -19,12 +19,20 @@ export default function Home() {
           <div className="bg-white p-6 rounded-lg shadow-md border border-amber-100 hover:shadow-lg transition-shadow">
             <h2 className="text-2xl font-semibold text-amber-700 mb-4">Área do Artesão</h2>
             <p className="text-gray-600 mb-6">Cadastre-se como artesão, gerencie seus produtos e conecte-se com clientes em todo o Brasil.</p>
-            <a 
-              href="/artesao/cadastro" 
-              className="inline-block px-6 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors"
-            >
-              Cadastrar como Artesão
-            </a>
+            <div className="flex justify-center gap-4">
+              <a 
+                href="/artesao/cadastro" 
+                className="inline-block px-6 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors"
+              >
+                Cadastrar como Artesão
+              </a>
+              <a 
+                href="/artesao/login" 
+                className="inline-block px-6 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors"
+              >
+                Logar como Artesão
+              </a>
+            </div>
           </div>
           
           <div className="bg-white p-6 rounded-lg shadow-md border border-amber-100 hover:shadow-lg transition-shadow">
