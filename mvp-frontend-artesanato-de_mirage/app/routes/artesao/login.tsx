@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Layout } from "../../components/Layout";
+import login from "~/services/auth/login";
 
 export default function CadastroArtesao() {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ export default function CadastroArtesao() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
+  const [erroLogin, setErroLogin] = useState({erro: false, mensagem: ""});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -53,7 +55,7 @@ export default function CadastroArtesao() {
     return newErrors;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const newErrors = validateForm();
@@ -61,13 +63,26 @@ export default function CadastroArtesao() {
     
     if (Object.keys(newErrors).length === 0) {
       // Aqui seria feita a chamada para a API
-      console.log("Dados do formulário:", formData);
-      setSuccess(true);
-      
-      // Reset do formulário após sucesso
-      setTimeout(() => {
-        setSuccess(false);
-      }, 5000);
+      const response = await login({
+        email: formData.email,
+        senha: formData.senha
+      }) as any
+      console.log(response);
+      if (response.status === '200') {
+        setSuccess(true);
+        localStorage.setItem('nome', response.data.nome);
+        localStorage.setItem('email', formData.email);
+        localStorage.setItem('id', response.data.id);
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 5000);
+      } else {
+        setErroLogin({erro: true, mensagem: response.data.detail});
+        setTimeout(() => {
+            setSuccess(false);
+            setErroLogin({erro: false, mensagem: ""});
+        }, 5000);
+      }
     }
   };
 
@@ -79,6 +94,12 @@ export default function CadastroArtesao() {
         {success && (
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
             <p>Login realizado com sucesso! Redirecionando...</p>
+          </div>
+        )}
+
+        {erroLogin.erro && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+            <p>Erro no cadastro: {erroLogin.mensagem}</p>
           </div>
         )}
         
@@ -131,7 +152,7 @@ export default function CadastroArtesao() {
               type="submit"
               className="px-6 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-colors"
             >
-              Cadastrar
+              Logar
             </button>
           </div>
         </form>

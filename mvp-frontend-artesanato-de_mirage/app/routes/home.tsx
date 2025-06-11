@@ -35,15 +35,23 @@ export default function Home() {
             </div>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-md border border-amber-100 hover:shadow-lg transition-shadow">
-            <h2 className="text-2xl font-semibold text-amber-700 mb-4">Cadastrar Produto</h2>
-            <p className="text-gray-600 mb-6">Já é um artesão cadastrado? Adicione seus produtos à nossa plataforma.</p>
-            <a 
-              href="/produto/cadastro" 
-              className="inline-block px-6 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors"
-            >
-              Cadastrar Produto
-            </a>
+          <div className="bg-white p-6 rounded-lg shadow-md border border-amber-100 hover:shadow-lg transition-shadow " >
+            <h2 className="text-2xl font-semibold text-amber-700 mb-4">Área do Produto</h2>
+            <p className="text-gray-600 mb-6">Já é um artesão cadastrado? Adicione seus produtos à nossa plataforma ou veja os produtos cadastrados.</p>
+            <div className="flex justify-center gap-4">  
+              <a 
+                href="/produto/cadastro" 
+                className="inline-block px-6 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors"
+              >
+                Cadastrar Produto
+              </a>
+              <a 
+                href={`/artesao/produtos`} 
+                className="inline-block px-6 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors"
+              >
+                Listar Produtos
+              </a>
+            </div>
           </div>
         </div>
         
