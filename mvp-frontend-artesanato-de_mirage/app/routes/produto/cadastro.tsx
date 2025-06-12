@@ -1,74 +1,17 @@
 import { useState } from "react";
 import { Layout } from "../../components/Layout";
+import cadastrar from "~/services/produtos/cadastrar";
 
 export default function CadastroProduto() {
   const [formData, setFormData] = useState({
     nome: "",
-    categoria: "",
     descricao: "",
     preco: "",
-    quantidade: "",
-    peso: "",
-    dimensoes: {
-      altura: "",
-      largura: "",
-      comprimento: "",
-    },
-    tempoProducao: "",
-    materiais: [] as string[],
-    cores: [] as string[],
-    fotos: [] as File[],
-    fotosPreview: [] as string[],
-    destaque: false,
-    disponivel: true,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
-
-  const categoriasOptions = [
-    "Decoração",
-    "Utilitários",
-    "Acessórios",
-    "Vestuário",
-    "Joias",
-    "Brinquedos",
-    "Papelaria",
-    "Móveis",
-    "Outros",
-  ];
-
-  const materiaisOptions = [
-    "Madeira",
-    "Cerâmica",
-    "Tecido",
-    "Couro",
-    "Metal",
-    "Vidro",
-    "Papel",
-    "Pedra",
-    "Fibras naturais",
-    "Plástico reciclado",
-    "Outros",
-  ];
-
-  const coresOptions = [
-    "Branco",
-    "Preto",
-    "Vermelho",
-    "Azul",
-    "Verde",
-    "Amarelo",
-    "Marrom",
-    "Bege",
-    "Cinza",
-    "Rosa",
-    "Roxo",
-    "Laranja",
-    "Dourado",
-    "Prateado",
-    "Multicolorido",
-  ];
+  const [erroCadastro, setErroCadastro] = useState({erro: false, mensagem: ""});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -101,58 +44,10 @@ export default function CadastroProduto() {
     }
   };
 
-  const handleCheckboxArrayChange = (e: React.ChangeEvent<HTMLInputElement>, arrayName: "materiais" | "cores") => {
-    const { value, checked } = e.target;
-    
-    if (checked) {
-      setFormData({
-        ...formData,
-        [arrayName]: [...formData[arrayName], value],
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [arrayName]: formData[arrayName].filter(item => item !== value),
-      });
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-    
-    const newFiles = Array.from(files);
-    const newFilesPreview = newFiles.map(file => URL.createObjectURL(file));
-    
-    setFormData({
-      ...formData,
-      fotos: [...formData.fotos, ...newFiles],
-      fotosPreview: [...formData.fotosPreview, ...newFilesPreview],
-    });
-  };
-
-  const removeImage = (index: number) => {
-    const newFotos = [...formData.fotos];
-    const newFotosPreview = [...formData.fotosPreview];
-    
-    // Revoke the object URL to avoid memory leaks
-    URL.revokeObjectURL(newFotosPreview[index]);
-    
-    newFotos.splice(index, 1);
-    newFotosPreview.splice(index, 1);
-    
-    setFormData({
-      ...formData,
-      fotos: newFotos,
-      fotosPreview: newFotosPreview,
-    });
-  };
-
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
     if (!formData.nome.trim()) newErrors.nome = "Nome do produto é obrigatório";
-    if (!formData.categoria) newErrors.categoria = "Categoria é obrigatória";
     if (!formData.descricao.trim()) newErrors.descricao = "Descrição é obrigatória";
     
     if (!formData.preco) {
@@ -164,41 +59,38 @@ export default function CadastroProduto() {
       }
     }
     
-    if (!formData.quantidade) {
-      newErrors.quantidade = "Quantidade é obrigatória";
-    } else {
-      const qtdValue = parseInt(formData.quantidade);
-      if (isNaN(qtdValue) || qtdValue < 0) {
-        newErrors.quantidade = "Quantidade deve ser um valor não negativo";
-      }
-    }
-    
-    if (formData.materiais.length === 0) {
-      newErrors.materiais = "Selecione pelo menos um material";
-    }
-    
-    if (formData.fotos.length === 0) {
-      newErrors.fotos = "Adicione pelo menos uma foto do produto";
-    }
-    
     return newErrors;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const newErrors = validateForm();
     setErrors(newErrors);
     
     if (Object.keys(newErrors).length === 0) {
-      // Aqui seria feita a chamada para a API
-      console.log("Dados do formulário:", formData);
-      setSuccess(true);
+      const response = await cadastrar({
+        nome: formData.nome,
+        descricao: formData.descricao,
+        preco: parseFloat(formData.preco),
+        artesaoId: parseInt(localStorage.getItem('id') as string)
+      })
       
-      // Reset do formulário após sucesso
-      setTimeout(() => {
-        setSuccess(false);
-      }, 5000);
+      console.log("Resposta da API:", response);
+      
+      if (response.status === '201') {
+        setSuccess(true);
+        setErroCadastro({erro: false, mensagem: ""});
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+      } else {
+        setErroCadastro({erro: true, mensagem: response.data.detail});
+        setTimeout(() => {
+          setSuccess(false);
+          setErroCadastro({erro: false, mensagem: ""});
+        }, 5000);
+      }
     }
   };
 
@@ -254,6 +146,12 @@ export default function CadastroProduto() {
             <p>Produto cadastrado com sucesso!</p>
           </div>
         )}
+
+        {erroCadastro.erro && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            <p>Erro ao cadastrar produto:</p>
+          </div>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -272,35 +170,12 @@ export default function CadastroProduto() {
                 name="nome"
                 value={formData.nome}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md ${
+                className={`w-full px-3 py-2 border rounded-md text-black ${
                   errors.nome ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Ex: Vaso de Cerâmica Pintado à Mão"
               />
               {errors.nome && <p className="text-red-500 text-xs mt-1">{errors.nome}</p>}
-            </div>
-            
-            <div>
-              <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-1">
-                Categoria *
-              </label>
-              <select
-                id="categoria"
-                name="categoria"
-                value={formData.categoria}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  errors.categoria ? "border-red-500" : "border-gray-300"
-                }`}
-              >
-                <option value="">Selecione uma categoria</option>
-                {categoriasOptions.map((categoria) => (
-                  <option key={categoria} value={categoria}>
-                    {categoria}
-                  </option>
-                ))}
-              </select>
-              {errors.categoria && <p className="text-red-500 text-xs mt-1">{errors.categoria}</p>}
             </div>
             
             <div>
@@ -312,7 +187,7 @@ export default function CadastroProduto() {
                 id="preco"
                 name="preco"
                 onChange={handlePriceChange}
-                className={`w-full px-3 py-2 border rounded-md ${
+                className={`w-full px-3 py-2 border rounded-md text-black ${
                   errors.preco ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="R$ 0,00"
@@ -330,265 +205,12 @@ export default function CadastroProduto() {
                 value={formData.descricao}
                 onChange={handleChange}
                 rows={4}
-                className={`w-full px-3 py-2 border rounded-md ${
+                className={`w-full px-3 py-2 border rounded-md text-black ${
                   errors.descricao ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Descreva detalhes do produto, técnicas utilizadas, inspiração, etc."
               />
               {errors.descricao && <p className="text-red-500 text-xs mt-1">{errors.descricao}</p>}
-            </div>
-            
-            {/* Detalhes do Produto */}
-            <div className="col-span-2">
-              <h2 className="text-xl font-semibold text-amber-700 mb-4">Detalhes do Produto</h2>
-            </div>
-            
-            <div>
-              <label htmlFor="quantidade" className="block text-sm font-medium text-gray-700 mb-1">
-                Quantidade em Estoque *
-              </label>
-              <input
-                type="number"
-                id="quantidade"
-                name="quantidade"
-                value={formData.quantidade}
-                onChange={handleChange}
-                min="0"
-                className={`w-full px-3 py-2 border rounded-md ${
-                  errors.quantidade ? "border-red-500" : "border-gray-300"
-                }`}
-              />
-              {errors.quantidade && <p className="text-red-500 text-xs mt-1">{errors.quantidade}</p>}
-            </div>
-            
-            <div>
-              <label htmlFor="peso" className="block text-sm font-medium text-gray-700 mb-1">
-                Peso (em gramas)
-              </label>
-              <input
-                type="number"
-                id="peso"
-                name="peso"
-                value={formData.peso}
-                onChange={handleChange}
-                min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="Ex: 500"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="dimensoes.altura" className="block text-sm font-medium text-gray-700 mb-1">
-                Altura (cm)
-              </label>
-              <input
-                type="number"
-                id="dimensoes.altura"
-                name="dimensoes.altura"
-                value={formData.dimensoes.altura}
-                onChange={handleChange}
-                min="0"
-                step="0.1"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="dimensoes.largura" className="block text-sm font-medium text-gray-700 mb-1">
-                Largura (cm)
-              </label>
-              <input
-                type="number"
-                id="dimensoes.largura"
-                name="dimensoes.largura"
-                value={formData.dimensoes.largura}
-                onChange={handleChange}
-                min="0"
-                step="0.1"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="dimensoes.comprimento" className="block text-sm font-medium text-gray-700 mb-1">
-                Comprimento (cm)
-              </label>
-              <input
-                type="number"
-                id="dimensoes.comprimento"
-                name="dimensoes.comprimento"
-                value={formData.dimensoes.comprimento}
-                onChange={handleChange}
-                min="0"
-                step="0.1"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="tempoProducao" className="block text-sm font-medium text-gray-700 mb-1">
-                Tempo de Produção (dias)
-              </label>
-              <input
-                type="number"
-                id="tempoProducao"
-                name="tempoProducao"
-                value={formData.tempoProducao}
-                onChange={handleChange}
-                min="1"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="Ex: 5"
-              />
-            </div>
-            
-            {/* Materiais */}
-            <div className="col-span-2">
-              <h2 className="text-xl font-semibold text-amber-700 mb-4">Materiais e Cores</h2>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Materiais Utilizados *
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {materiaisOptions.map((material) => (
-                    <div key={material} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id={`material-${material}`}
-                        name="materiais"
-                        value={material}
-                        checked={formData.materiais.includes(material)}
-                        onChange={(e) => handleCheckboxArrayChange(e, "materiais")}
-                        className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
-                      />
-                      <label
-                        htmlFor={`material-${material}`}
-                        className="ml-2 block text-sm text-gray-700"
-                      >
-                        {material}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-                {errors.materiais && <p className="text-red-500 text-xs mt-1">{errors.materiais}</p>}
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Cores
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {coresOptions.map((cor) => (
-                    <div key={cor} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id={`cor-${cor}`}
-                        name="cores"
-                        value={cor}
-                        checked={formData.cores.includes(cor)}
-                        onChange={(e) => handleCheckboxArrayChange(e, "cores")}
-                        className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
-                      />
-                      <label
-                        htmlFor={`cor-${cor}`}
-                        className="ml-2 block text-sm text-gray-700"
-                      >
-                        {cor}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            {/* Fotos */}
-            <div className="col-span-2">
-              <h2 className="text-xl font-semibold text-amber-700 mb-4">Fotos do Produto</h2>
-              
-              <div className="mb-4">
-                <label htmlFor="fotos" className="block text-sm font-medium text-gray-700 mb-1">
-                  Adicionar Fotos *
-                </label>
-                <input
-                  type="file"
-                  id="fotos"
-                  name="fotos"
-                  onChange={handleFileChange}
-                  multiple
-                  accept="image/*"
-                  className={`w-full px-3 py-2 border rounded-md ${
-                    errors.fotos ? "border-red-500" : "border-gray-300"
-                  }`}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Você pode selecionar múltiplas fotos. A primeira foto será usada como imagem principal.
-                </p>
-                {errors.fotos && <p className="text-red-500 text-xs mt-1">{errors.fotos}</p>}
-              </div>
-              
-              {formData.fotosPreview.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Fotos selecionadas:</p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {formData.fotosPreview.map((preview, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={preview}
-                          alt={`Foto ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-md"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
-                        >
-                          ×
-                        </button>
-                        {index === 0 && (
-                          <span className="absolute bottom-1 left-1 bg-amber-500 text-white text-xs px-2 py-1 rounded">
-                            Principal
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            {/* Opções adicionais */}
-            <div className="col-span-2">
-              <h2 className="text-xl font-semibold text-amber-700 mb-4">Opções adicionais</h2>
-              
-              <div className="flex flex-col space-y-4">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="destaque"
-                    name="destaque"
-                    checked={formData.destaque}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="destaque" className="ml-2 block text-sm text-gray-700">
-                    Produto em destaque
-                  </label>
-                </div>
-                
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="disponivel"
-                    name="disponivel"
-                    checked={formData.disponivel}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="disponivel" className="ml-2 block text-sm text-gray-700">
-                    Produto disponível para venda
-                  </label>
-                </div>
-              </div>
             </div>
           </div>
           

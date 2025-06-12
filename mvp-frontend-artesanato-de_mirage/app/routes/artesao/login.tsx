@@ -75,7 +75,7 @@ export default function CadastroArtesao() {
         localStorage.setItem('id', response.data.id);
         setTimeout(() => {
             window.location.href = '/';
-        }, 5000);
+        }, 3000);
       } else {
         setErroLogin({erro: true, mensagem: response.data.detail});
         setTimeout(() => {

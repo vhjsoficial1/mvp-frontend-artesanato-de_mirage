@@ -1,5 +1,5 @@
 export default async function listarTodos(){
-    const response = await fetch('http://localhost:3000/produtos');
+    const response = await fetch('http://localhost:3000/produtos/' + localStorage.getItem('id'));
     return {
         status: response.status.toString(),
         data: await response.json()
