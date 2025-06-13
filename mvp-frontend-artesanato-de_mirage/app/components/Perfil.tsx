@@ -11,7 +11,7 @@ export default function Perfil() {
             }
         } catch (error) {
         }
-    }, [nome])
+    }, []);
     return (
         <div>
             <a href="/perfil" className="hover:text-amber-200 transition-colors flex justify-center items-center gap-4">
