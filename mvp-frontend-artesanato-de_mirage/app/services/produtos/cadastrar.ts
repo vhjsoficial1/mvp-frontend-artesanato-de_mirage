@@ -6,7 +6,7 @@ export type CadastrarData = {
 };
 
 export default async function cadastrar(produto : CadastrarData) {
-    const response = await fetch('http://localhost:3000/produtos/' + produto.artesaoId, {
+    const response = await fetch('https://mvp-backend-artesanato-de-mirage.onrender.com' + '/produtos/' + produto.artesaoId, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

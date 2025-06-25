@@ -17,7 +17,7 @@ export type RegistroResponse = {
 }
 
 export default async function registro(data : RegistroData) : Promise<RegistroResponse> {
-    const response = await fetch('http://localhost:3000/auth/register', {
+    const response = await fetch('https://mvp-backend-artesanato-de-mirage.onrender.com' + '/auth/register', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
