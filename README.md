@@ -114,15 +114,4 @@ Para construir e executar a aplicação usando Docker:
 
 O aplicativo estará acessível em `http://localhost:3000`.
 
-## Contribuição
-
-Se você deseja contribuir com o projeto, por favor, siga as diretrizes de contribuição (a serem definidas).
-
-## Licença
-
-Este projeto está licenciado sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
-
----
-
-Feito com ❤️ para a comunidade de artesanato.
 
